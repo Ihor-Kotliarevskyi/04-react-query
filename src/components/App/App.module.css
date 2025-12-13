@@ -12,11 +12,18 @@
 }
 
 .pagination li {
+  box-sizing: border-box;
   width: 40px;
   height: 40px;
-  border: 1px solid #ccc;
   cursor: pointer;
-  border-radius: 4px;
+  border-radius: 50%;
+  box-shadow: 2px 2px 4px rgba(10, 102, 194, 0.2);
+  transition: box-shadow 0.3s ease, transform 0.3s ease;
+}
+
+.pagination li:hover {
+  box-shadow: 4px 4px 8px rgba(10, 102, 194, 0.35);
+  transform: translateY(-4px);
 }
 
 .pagination a {
