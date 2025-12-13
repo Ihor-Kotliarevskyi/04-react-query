@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { Movie } from "../../types/movie";
 import ErrorMessage from "../ErrorMessage/ErrorMessage";
 import Loader from "../Loader/Loader";
@@ -7,9 +7,9 @@ import MovieModal from "../MovieModal/MovieModal";
 import SearchBar from "../SearchBar/SearchBar";
 import { fetchMovies } from "../../services/movieService";
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
-import { Toaster } from "react-hot-toast";
-import ReactPaginate from "react-paginate";
+import toast, { Toaster } from "react-hot-toast";
 import css from "./App.module.css";
+import Pagination from "../Pagination/Pagination";
 
 function App() {
   const [selectedMovie, setSelectedMovie] = useState<Movie | null>(null);
@@ -21,7 +21,13 @@ function App() {
     setCurrentPage(1);
   };
 
-  const result = useQuery({
+  const {
+    data: { results = [], total_pages = 0, total_results = 0 } = {},
+    error,
+    isError,
+    isLoading,
+    isPending,
+  } = useQuery({
     queryKey: ["movies", query, currentPage],
     queryFn: () => fetchMovies(query, currentPage),
     enabled: query !== "",
@@ -29,7 +35,13 @@ function App() {
     placeholderData: keepPreviousData,
   });
 
-  const totalPages = result.data?.total_pages ?? 0;
+  useEffect(() => {
+    if (!isPending && total_results === 0) {
+      toast.error("No movies found for your request.");
+    }
+  }, [total_results, isPending]);
+
+  const totalPages = total_pages ?? 0;
 
   const openModal = ({
     id,
@@ -56,27 +68,30 @@ function App() {
 
   return (
     <>
-      <SearchBar onSubmit={handleSearch} />
-      <MovieGrid onSelect={openModal} movies={result.data?.results || []} />
-      {result.isLoading && <Loader />}
-      {result.isError && <ErrorMessage error={result.error.message} />}
-      {totalPages > 1 && (
-        <ReactPaginate
-          pageCount={totalPages}
-          pageRangeDisplayed={3}
-          marginPagesDisplayed={1}
-          onPageChange={({ selected }) => setCurrentPage(selected + 1)}
-          forcePage={currentPage - 1}
-          containerClassName={css.pagination}
-          activeClassName={css.active}
-          nextLabel="→"
-          previousLabel="←"
-        />
-      )}
-      {selectedMovie && (
-        <MovieModal onClose={closeModal} movie={selectedMovie} />
-      )}
-      <Toaster position="top-center" reverseOrder={true} />
+      <div className={css.app}>
+        <SearchBar onSubmit={handleSearch} />
+        {totalPages > 1 && (
+          <Pagination
+            totalPages={totalPages}
+            currentPage={currentPage}
+            setCurrentPage={setCurrentPage}
+          />
+        )}
+        <MovieGrid onSelect={openModal} movies={results || []} />
+        {isLoading && <Loader />}
+        {isError && <ErrorMessage error={error.message} />}
+        {totalPages > 1 && (
+          <Pagination
+            totalPages={totalPages}
+            currentPage={currentPage}
+            setCurrentPage={setCurrentPage}
+          />
+        )}
+        {selectedMovie && (
+          <MovieModal onClose={closeModal} movie={selectedMovie} />
+        )}
+        <Toaster position="top-center" reverseOrder={true} />
+      </div>
     </>
   );
 }
