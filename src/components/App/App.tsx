@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import type { Movie } from "../../types/movie";
+import type { Movie, MoviesHttpResponse } from "../../types/movie";
 import ErrorMessage from "../ErrorMessage/ErrorMessage";
 import Loader from "../Loader/Loader";
 import MovieGrid from "../MovieGrid/MovieGrid";
@@ -27,7 +27,7 @@ function App() {
     isError,
     isLoading,
     isPending,
-  } = useQuery({
+  } = useQuery<MoviesHttpResponse, Error>({
     queryKey: ["movies", query, currentPage],
     queryFn: () => fetchMovies(query, currentPage),
     enabled: query !== "",
@@ -77,7 +77,9 @@ function App() {
             setCurrentPage={setCurrentPage}
           />
         )}
-        <MovieGrid onSelect={openModal} movies={results || []} />
+        {total_results > 0 && (
+          <MovieGrid onSelect={openModal} movies={results || []} />
+        )}
         {isLoading && <Loader />}
         {isError && <ErrorMessage error={error.message} />}
         {totalPages > 1 && (

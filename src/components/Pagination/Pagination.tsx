@@ -17,7 +17,13 @@ function Pagination({
       pageCount={totalPages}
       pageRangeDisplayed={3}
       marginPagesDisplayed={1}
-      onPageChange={({ selected }) => setCurrentPage(selected + 1)}
+      onPageChange={({ selected }) => {
+        setCurrentPage(selected + 1);
+        window.scrollTo({
+          top: 96,
+          behavior: "smooth",
+        });
+      }}
       forcePage={currentPage - 1}
       containerClassName={css.pagination}
       activeClassName={css.active}
