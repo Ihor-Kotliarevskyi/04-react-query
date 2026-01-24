@@ -43,7 +43,8 @@
 }
 
 .input:focus {
-  outline: 1px solid #0a66c2;
+  border: 1px solid #0a66c2;
+  outline: none;
 }
 
 .button {
